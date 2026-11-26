@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>보솜보솜 웹게임 씬 구조 v2</title>
+<style>
+  @page { size: A4 portrait; margin: 18mm 17mm 18mm 17mm; }
+  :root { --main: #1F3A5F; --accent: #E8735A; --soft: #EEF2F7; --line: #C9D3E0; --text: #222; --sub: #5B6675; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: "Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif; font-size: 11pt; line-height: 1.6; color: var(--text); }
+  h1, h2, h3 { color: var(--main); margin: 0; }
+  h2 { font-size: 17pt; padding-bottom: 6px; border-bottom: 3px solid var(--main); margin-bottom: 14px; }
+  h3 { font-size: 12.5pt; }
+  p { margin: 0 0 8px; }
+  ul { margin: 4px 0 8px; padding-left: 20px; }
+  li { margin: 2px 0; }
+  .em { color: var(--accent); font-weight: 700; }
+  .page { page-break-after: always; break-after: page; }
+  .page.last { page-break-after: auto; break-after: auto; }
+  .avoid { break-inside: avoid; page-break-inside: avoid; }
+
+  /* cover */
+  .cover { height: 255mm; display: flex; flex-direction: column; justify-content: center; }
+  .cover .tag { color: var(--accent); font-weight: 700; font-size: 12pt; letter-spacing: 2px; }
+  .cover h1 { font-size: 30pt; line-height: 1.3; margin: 10px 0 16px; }
+  .cover .bar { width: 70px; height: 6px; background: var(--accent); margin-bottom: 26px; }
+  .cover .lead { font-size: 13pt; color: var(--sub); margin-bottom: 60px; }
+  .cover table.meta { border-collapse: collapse; font-size: 11.5pt; }
+  .cover table.meta td { padding: 6px 18px 6px 0; border: none; }
+  .cover table.meta td:first-child { color: var(--sub); }
+
+  /* summary */
+  .oneline { background: var(--soft); border-left: 6px solid var(--accent); padding: 12px 16px; margin-bottom: 14px; font-size: 12pt; }
+  .diagram { border: 1px solid var(--line); border-radius: 8px; padding: 10px; text-align: center; }
+  .diagram svg { max-width: 100% !important; width: 100%; height: auto; max-height: 140mm; }
+  .legend { font-size: 9.5pt; color: var(--sub); margin-top: 6px; }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; font-size: 10.5pt; }
+  th, td { border: 1px solid var(--line); padding: 4px 9px; vertical-align: top; text-align: left; }
+  th { background: var(--main); color: #fff; font-weight: 700; }
+  tr { break-inside: avoid; page-break-inside: avoid; }
+  tr.total td { background: var(--soft); font-weight: 700; color: var(--main); }
+
+  /* scene cards */
+  .card { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+  .card .head { background: var(--main); color: #fff; padding: 7px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .card .head h3 { color: #fff; font-size: 12pt; }
+  .card .head .en { font-weight: 400; opacity: .8; font-size: 10pt; margin-left: 6px; }
+  .card .time { background: var(--accent); color: #fff; border-radius: 12px; padding: 1px 11px; font-size: 10pt; font-weight: 700; white-space: nowrap; }
+  .card table { font-size: 10.5pt; }
+  .card td { border: none; border-top: 1px solid var(--line); }
+  .card td.k { width: 23%; background: var(--soft); color: var(--main); font-weight: 700; }
+  .card ol, .card ul { margin: 0; padding-left: 18px; }
+  .note { font-size: 10pt; color: var(--sub); }
+  .callout { background: var(--soft); border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 10.5pt; }
+  .callout b { color: var(--main); }
+  .key { display: inline-block; border: 1px solid var(--main); border-bottom-width: 2px; border-radius: 4px; padding: 0 6px; font-weight: 700; color: var(--main); background: #fff; font-size: 10pt; line-height: 1.5; }
+  .badge { display: inline-block; font-size: 9pt; font-weight: 700; border-radius: 10px; padding: 0 8px; white-space: nowrap; }
+  .b-assume { background: #FBE3DC; color: #B4462E; }
+  .b-rec { background: #DCE6F2; color: var(--main); }
+</style>
+<script src="mermaid-11.4.1.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'base',
+    themeVariables: { fontFamily: '"Malgun Gothic", sans-serif', fontSize: '16px', lineColor: '#1F3A5F', primaryTextColor: '#1F3A5F', edgeLabelBackground: '#ffffff' },
+    flowchart: { htmlLabels: true, wrappingWidth: 320, curve: 'basis', nodeSpacing: 40, rankSpacing: 38 } });
+</script>
+</head>
+<body>
+
+<!-- 1. Cover -->
+<section class="page cover">
+  <div class="tag">SHOW ME YOUR GAME · 시연용 웹게임</div>
+  <h1>보솜보솜 웹게임<br>씬 구조 v2.1</h1>
+  <div class="bar"></div>
+  <div class="lead">보솜이 1인으로 라이벌을 이기고 챔피언 트로피를 되찾는 3분 흐름</div>
+  <table class="meta">
+    <tr><td>개정일</td><td>2026년 11월 27일 (v1: 11월 24일 태그매치)</td></tr>
+    <tr><td>작성자</td><td>해피만보</td></tr>
+    <tr><td>공유 대상</td><td>솜</td></tr>
+    <tr><td>원본 문서</td><td>docs/scene-flow.md</td></tr>
+  </table>
+</section>
+
+<!-- 2. Overview -->
+<section class="page">
+  <h2>1. 한눈에 보기</h2>
+  <div class="oneline"><b>한 줄 요약</b> — 트로피의 색을 빼앗아 간 "가려진 적"을 쫓아, 보송한 보솜이가 가시로 변신해 라이벌 3경기를 이기고 트로피를 되찾는 2D 실시간 배틀 게임</div>
+  <table class="avoid" style="margin-bottom:12px">
+    <tr><th style="width:22%">바뀐 점</th><th style="width:36%">v1 태그매치</th><th>v2 보솜이 1인</th></tr>
+    <tr><td>조작 캐릭터</td><td>만보 ↔ 솜 교체</td><td><b>보솜이 1인</b></td></tr>
+    <tr><td>목표</td><td>우승 + 동료 영입</td><td><b>빼앗긴 트로피 탈환</b></td></tr>
+    <tr><td>핵심 조작</td><td>태그 + 합동기</td><td><b>가드(가시 반격) + 흉내</b></td></tr>
+    <tr><td>대전 상대</td><td>대진 추첨</td><td><b>빌드됐조 → 나가자싸우자이기자 → GenJ</b></td></tr>
+    <tr><td>결승 연출</td><td>일반 경기</td><td><b>GenJ가 노이즈에 씌는 2페이즈</b></td></tr>
+    <tr><td>승리 후 장면</td><td>영입 (파티 추가)</td><td><b>응원단 합류</b></td></tr>
+  </table>
+  <div class="diagram avoid" style="--h:1">
+<pre class="mermaid">
+flowchart TB
+    Logo["① 로고<br/>1.5초"] --> Opening["② 오프닝 배틀<br/>트로피 색 빼앗김 → 등장 변신 → 가드"]
+    Opening --> Title["③ 타이틀<br/>시작하기 · 설정"]
+    Title --> Bracket["④ 대진표<br/>추첨 · 다음 상대"]
+    Bracket --> Battle["⑤ 배틀<br/>보솜이 1:1 · 장외 연출"]
+    Battle -- "패배: 같은 경기 재도전" --> Battle
+    Battle -- "승리 (8강·4강)" --> Cheer["⑥ 응원단 합류<br/>응원할게!"]
+    Cheer -- "다음 경기로" --> Bracket
+    Battle -- "승리 (결승)" --> Ending["⑦ 엔딩<br/>트로피 탈환 · 개발 로그 · 빈 슬롯"]
+    classDef main fill:#EEF2F7,stroke:#1F3A5F,stroke-width:2px,color:#1F3A5F
+    classDef hot fill:#FBE3DC,stroke:#E8735A,stroke-width:2px,color:#7A2E1C
+    class Logo,Title,Bracket,Cheer main
+    class Opening,Battle,Ending hot
+</pre>
+  </div>
+  <div class="legend">주황색 장면은 이야기의 축(트로피를 빼앗김 → 싸움 → 되찾음)입니다. 화살표 위 글자는 넘어가는 조건입니다.</div>
+</section>
+
+<!-- 3. Scene details -->
+<section class="page">
+  <h2>2. 장면별 상세</h2>
+
+  <div class="card avoid">
+    <div class="head"><h3>① 로고<span class="en">LogoScene</span></h3><span class="time">1.5초</span></div>
+    <table>
+      <tr><td class="k">화면 구성</td><td>검은 배경 가운데 "보솜보솜" 로고가 나타났다 사라짐</td></tr>
+      <tr><td class="k">입력</td><td>클릭하거나 아무 키 → 바로 넘어감. 이 첫 클릭부터 소리가 나옴</td></tr>
+      <tr><td class="k">다음 장면</td><td>연출 종료 또는 클릭, 리소스 준비 완료 → ② 오프닝 배틀</td></tr>
+    </table>
+  </div>
+
+  <div class="card avoid">
+    <div class="head"><h3>② 오프닝 배틀<span class="en">OpeningBattleScene</span></h3><span class="time">25초 (최대 30초)</span></div>
+    <table>
+      <tr><td class="k">진행</td><td><ol>
+        <li>0~3초: 시상대의 챔피언 트로피를 가려진 적이 할퀴자 <b>회색 노이즈</b>로 물듦</li>
+        <li>3~6초: <b>보송한 보솜이</b> 착지. 할퀸 자리부터 털이 회색으로 번짐</li>
+        <li>6~8초: 눈이 마주침 → <b>"!"</b> → 털이 터지며 <b>가시로 변신</b>, 색이 돌아옴</li>
+        <li>8~16초: 적의 공격 예고 → <b>가드 키 그림만</b> 크게 깜빡임 → 가드하면 "따끔!" 하고 적이 튕김</li>
+        <li>16~22초: 공격 키 그림 깜빡임 → 몇 대 때림</li>
+        <li>22~25초: 적이 노이즈로 흩어져 사라지고 트로피는 회색으로 남음. 노이즈 조각이 대진표 쪽으로 날아감 → 암전</li></ol></td></tr>
+      <tr><td class="k">다음 장면</td><td>암전이 끝나면 → ③ 타이틀</td></tr>
+      <tr><td class="k">안전 장치</td><td>보솜이는 쓰러지지 않음. 3초 동안 가드를 안 누르면 자동 가드 → <span class="em">실패가 없는 장면</span></td></tr>
+      <tr><td class="k">사용 그림</td><td>가려진 적 1페이즈, 보솜이 transform·guard·attack 프레임, 표정 surprised</td></tr>
+    </table>
+  </div>
+
+  <div class="card avoid">
+    <div class="head"><h3>③ 타이틀<span class="en">TitleScene</span></h3><span class="time">5초</span></div>
+    <table>
+      <tr><td class="k">화면 구성</td><td>게임 제목, "시작하기"·"설정", 배경에 가시 보솜이와 회색 트로피 실루엣. 게임 종료 메뉴 없음</td></tr>
+      <tr><td class="k">다음 장면</td><td>"시작하기" → ④ 대진표</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="page">
+  <div class="card avoid">
+    <div class="head"><h3>④ 대진표<span class="en">BracketScene</span></h3><span class="time">첫 방문 8초 · 이후 4~5초</span></div>
+    <table>
+      <tr><td class="k">화면 구성</td><td>보솜보솜 + 라이벌 9팀, 총 10팀 대진표. 상대는 <b>빌드됐조(8강) → 나가자싸우자이기자(4강) → GenJ(결승)</b></td></tr>
+      <tr><td class="k">첫 방문</td><td>상대 추첨 룰렛(약 3초). 결과는 미리 정한 순서로 고정</td></tr>
+      <tr><td class="k">다시 방문</td><td>승리선이 다음 칸으로 이어짐. 관중석에 응원단 라이벌이 보임</td></tr>
+      <tr><td class="k">결승 직전</td><td>GenJ 칸이 네온으로 번쩍이다가 한 번 회색 노이즈로 지직거림(복선)</td></tr>
+      <tr><td class="k">다음 장면</td><td>다음 경기 칸 클릭 또는 Enter → ⑤ 배틀</td></tr>
+    </table>
+  </div>
+
+  <div class="card avoid">
+    <div class="head"><h3>⑤ 배틀<span class="en">BattleScene</span></h3><span class="time">8강·4강 25초 · 결승 30초</span></div>
+    <table>
+      <tr><td class="k">화면 구성</td><td><ul>
+        <li>위: 보솜이 체력바(표정 아이콘) / 라이벌 체력바(팀명, 얼굴)</li>
+        <li>아래: 기술 3칸 — 공격, 가시 구르기, 흉내(흉내 낼 스킬이 없으면 회색)</li>
+        <li>가운데: 양 끝이 열린 무대, 뒤 관중석에 응원단</li></ul></td></tr>
+      <tr><td class="k">핵심 루프</td><td><ol>
+        <li>라이벌이 대표 스킬을 예고하고 사용</li>
+        <li>보솜이가 가드 → 가시 상태. 닿은 상대는 "따끔!" 튕김 + 라이벌별 가드 반응 연출</li>
+        <li>맞거나 막은 스킬이 흉내 칸에 <b>솜 버전</b>으로 저장 → 쓰면 상대 머리 위에 "?"</li></ol></td></tr>
+      <tr><td class="k">승리</td><td>체력 0 → 잠깐 멈춤 → 장외로 날아가 별이 됨<br>8강·4강 → ⑥ 응원단 합류, 결승 → ⑦ 엔딩</td></tr>
+      <tr><td class="k">결승 GenJ</td><td>네온·비 내리는 경기장. 체력 50%에서 화면 글리치 → GenJ가 회색 노이즈에 씌어 <b>2페이즈</b>(빨라지고 앞 상대 스킬을 섞어 씀). 장외로 날리면 노이즈가 벗겨지고 트로피 색 복구</td></tr>
+      <tr><td class="k">패배</td><td>"다시 한 번!" 1초 후 <span class="em">같은 경기를 바로 다시 시작</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card avoid">
+    <div class="head"><h3>⑥ 응원단 합류<span class="en">CheerScene</span></h3><span class="time">4초</span></div>
+    <table>
+      <tr><td class="k">화면 구성</td><td>장외로 날아갔던 라이벌이 다시 들어옴 → "응원할게!" → 관중석 응원단 칸으로 점프</td></tr>
+      <tr><td class="k">입력</td><td>클릭 또는 Enter로 건너뛰기. 누르지 않아도 자동 진행</td></tr>
+      <tr><td class="k">다음 장면</td><td>→ ④ 대진표(다음 경기). 결승 후에는 이 장면 없이 엔딩</td></tr>
+    </table>
+  </div>
+
+  <div class="card avoid">
+    <div class="head"><h3>⑦ 엔딩<span class="en">EndingScene</span></h3><span class="time">18초</span></div>
+    <table>
+      <tr><td class="k">화면 구성</td><td><ol>
+        <li>트로피 탈환(5초): 회색 트로피에 색이 번지며 반짝임, 보솜이 victory 모션, 응원단 등장, 꽃가루</li>
+        <li>개발 로그 크레딧(9초): "기획부터 구현까지 4일" → Day 1~4</li>
+        <li>마지막 화면(4초~): "챔피언 보솜보솜의 다음 동료는?" + 빛나는 빈 슬롯 1칸</li></ol></td></tr>
+      <tr><td class="k">다음 장면</td><td>없음. 마지막 화면에 멈춰 발표 멘트로 이어감(R 키로 처음으로)</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="page">
+  <h2>3. 조작 키와 시간 배분</h2>
+  <table class="avoid">
+    <tr><th style="width:24%">동작</th><th style="width:30%">키</th><th>보솜이 모션</th></tr>
+    <tr><td>이동 · 점프</td><td><span class="key">←</span><span class="key">→</span><span class="key">↑</span> 또는 <span class="key">A</span><span class="key">D</span><span class="key">W</span></td><td>idle_spike · victory 01(공중)</td></tr>
+    <tr><td>기본 공격</td><td><span class="key">J</span></td><td>attack 01~04</td></tr>
+    <tr><td>가시 구르기</td><td><span class="key">K</span></td><td>heavy 01~06 (말아서 돌진 → 가시 폭발)</td></tr>
+    <tr><td>흉내</td><td><span class="key">L</span></td><td>저장된 상대 스킬의 솜 버전</td></tr>
+    <tr><td>가드 (가시 반격)</td><td><span class="key">Space</span> 누르고 있기</td><td>guard 01~03</td></tr>
+  </table>
+
+  <table class="avoid" style="margin-top:16px">
+    <tr><th style="width:8%">순서</th><th>장면</th><th style="width:18%">목표 시간</th><th style="width:18%">누적</th></tr>
+    <tr><td>1</td><td>로고</td><td>1.5초</td><td>0:01.5</td></tr>
+    <tr><td>2</td><td>오프닝 배틀</td><td>25초</td><td>0:26.5</td></tr>
+    <tr><td>3</td><td>타이틀</td><td>5초</td><td>0:31.5</td></tr>
+    <tr><td>4</td><td>대진표 (추첨)</td><td>8초</td><td>0:39.5</td></tr>
+    <tr><td>5</td><td>배틀 · 8강</td><td>25초</td><td>1:04.5</td></tr>
+    <tr><td>6</td><td>응원단 합류</td><td>4초</td><td>1:08.5</td></tr>
+    <tr><td>7</td><td>대진표</td><td>4초</td><td>1:12.5</td></tr>
+    <tr><td>8</td><td>배틀 · 4강</td><td>25초</td><td>1:37.5</td></tr>
+    <tr><td>9</td><td>응원단 합류</td><td>4초</td><td>1:41.5</td></tr>
+    <tr><td>10</td><td>대진표 (결승 복선)</td><td>5초</td><td>1:46.5</td></tr>
+    <tr><td>11</td><td>배틀 · 결승</td><td>30초</td><td>2:16.5</td></tr>
+    <tr><td>12</td><td>엔딩 (마지막 화면까지)</td><td>18초</td><td>2:34.5</td></tr>
+    <tr class="total"><td colspan="2">합계</td><td colspan="2">약 2분 35초 · 3분 이내 ✔</td></tr>
+  </table>
+  <ul style="margin-top:8px">
+    <li>남는 <b>25초</b>로 한 번 져서 다시 하는 시간을 감당합니다. 목표치이며 구현 후 실측합니다.</li>
+  </ul>
+
+  <h3 style="margin:16px 0 8px">시연용 단축키</h3>
+  <table class="avoid">
+    <tr><th style="width:12%">키</th><th style="width:30%">동작</th><th>이동한 뒤의 상태</th></tr>
+    <tr><td><span class="key">R</span></td><td>처음부터 다시</td><td>로고부터 시작</td></tr>
+    <tr><td><span class="key">1</span> <span class="key">2</span> <span class="key">3</span></td><td>8강 · 4강 · 결승으로</td><td>앞 경기 라이벌이 응원단에 자동으로 채워짐</td></tr>
+    <tr><td><span class="key">0</span></td><td>엔딩으로</td><td>응원단 2명으로 트로피 탈환 연출</td></tr>
+  </table>
+</section>
+
+<section class="page last">
+  <h2>4. 결정이 필요한 항목 (각 3안)</h2>
+  <p>★는 이 문서에 반영한 추천안입니다. 바뀌어도 데이터 수정 위주로 반영할 수 있게 만듭니다.</p>
+  <table class="avoid">
+    <tr><th style="width:13%">항목</th><th>A</th><th>B</th><th>C</th></tr>
+    <tr><td>가려진 적의 역할</td><td><b>★ 결승 GenJ가 50%에서 노이즈에 씌는 2페이즈</b><br>새 그림 불필요, 임팩트 큼</td><td>오프닝 전용. 결승 승리로 트로피 색 복구</td><td>결승 뒤 시상식 난입 보스전 (+30초, 시간 위험)</td></tr>
+    <tr><td>승리 후 장면</td><td><b>★ 응원단 합류</b><br>연출만 4초, 개발량 최소</td><td>v1처럼 영입 후 지원 공격. 재미↑ 개발량↑</td><td>장면 삭제. 시간 절약, 동료 메시지 약화</td></tr>
+        <tr><td>가드 키</td><td><b>★ Space 누르고 있기</b></td><td>S / ↓ 누르고 있기</td><td>별도 키 없이 J 타이밍 패리</td></tr>
+  </table>
+
+  <h2 style="margin-top:22px">5. 솜님 확인 필요 사항</h2>
+  <table class="avoid">
+    <tr><th style="width:6%">#</th><th>확인할 내용</th><th style="width:40%">현재 처리</th></tr>
+    <tr><td>1</td><td>라이벌 시안 ↔ 팀 매칭</td><td>쇼케이스 작품과 대조해 거의 확인. 회색 2종 = 가려진 적만 확인 필요</td></tr>
+    <tr><td>2</td><td>스킬 초안의 잘린 줄</td><td>가드 반응 6팀, 잭팟 역할이 비어 있음 → 원문 재전달 필요</td></tr>
+    <tr><td>3</td><td>보솜이 모션 프레임 투명 PNG</td><td>받기 전까지 시트에서 잘라 쓴 임시본 또는 도형으로 대체</td></tr>
+    <tr><td>4</td><td>응원 문구 9개, Day 1~4 개발 로그</td><td>문구 작성 필요</td></tr>
+  </table>
+</section>
+
+</body>
+</html>

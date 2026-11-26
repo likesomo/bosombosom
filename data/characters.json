@@ -1,0 +1,22 @@
+{
+  "characters": [
+    { "id": "bosomi", "name": "보솜이", "teamId": "bosombosom", "role": "tank", "color": "#ffe9d6",
+      "image": "bosomi", "imageFluffy": "bosomi_fluffy", "imageArmored": "bosomi_armored",
+      "scale": 0.375, "maxHp": 100, "speed": 330, "jumpPower": 760 },
+    { "id": "rival_buildedjo", "name": "빌드봇", "teamId": "buildedjo", "role": "tank", "color": "#f2c230",
+      "image": "rival_buildedjo", "scale": 0.44, "maxHp": 70, "speed": 150, "signatureSkillId": "build_drop" },
+    { "id": "rival_nagaja", "name": "햄장군", "teamId": "nagaja", "role": "attack", "color": "#e8a25a",
+      "image": "rival_nagaja", "scale": 0.44, "maxHp": 85, "speed": 190, "signatureSkillId": "victory_shout" },
+    { "id": "rival_genj", "name": "네온셰프", "teamId": "genj", "role": "attack", "color": "#ff3d9a",
+      "image": "rival_genj", "scale": 0.44, "maxHp": 110, "speed": 230, "signatureSkillId": "neon_pancake_flip",
+      "phase2": { "atHpRatio": 0.5, "speedScale": 1.35, "cooldownScale": 0.6, "extraSkillIds": ["build_drop", "victory_shout"] } },
+    { "id": "rival_masked_phase1", "name": "가려진 적", "teamId": "masked", "role": "attack", "color": "#8a8a99",
+      "image": "rival_masked_phase1", "scale": 0.44, "maxHp": 999, "speed": 200, "signatureSkillId": "color_steal" },
+    { "id": "rival_sorceress", "name": "소서리스", "teamId": "sorceress", "role": "attack", "color": "#8b5cf6", "image": "rival_sorceress", "scale": 0.44, "maxHp": 80, "speed": 180 },
+    { "id": "rival_anogame", "name": "아노게임", "teamId": "anogame", "role": "attack", "color": "#f59e0b", "image": "rival_anogame", "scale": 0.44, "maxHp": 80, "speed": 180 },
+    { "id": "rival_moonrabbit", "name": "문래빗", "teamId": "moonrabbit", "role": "support", "color": "#c4b5fd", "image": "rival_moonrabbit", "scale": 0.44, "maxHp": 80, "speed": 180 },
+    { "id": "rival_tansujoa", "name": "탄수조아", "teamId": "tansujoa", "role": "tank", "color": "#d6a35c", "image": "rival_tansujoa", "scale": 0.44, "maxHp": 80, "speed": 180 },
+    { "id": "rival_jackpot", "name": "잭팟", "teamId": "jackpot", "role": "attack", "color": "#b91c1c", "image": "rival_jackpot", "scale": 0.44, "maxHp": 80, "speed": 180 },
+    { "id": "rival_ex", "name": "엑스", "teamId": "ex", "role": "support", "color": "#4ade80", "image": "rival_ex", "scale": 0.44, "maxHp": 80, "speed": 180 }
+  ]
+}

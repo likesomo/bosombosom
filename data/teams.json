@@ -1,0 +1,15 @@
+{
+  "teams": [
+    { "id": "bosombosom", "name": "보솜보솜", "captain": "해피만보", "seed": "솜", "color": "#ffd27a", "characterId": "bosomi", "isPlayer": true },
+    { "id": "sorceress", "name": "소서리스", "captain": "포스", "seed": "미소", "color": "#8b5cf6", "characterId": "rival_sorceress" },
+    { "id": "anogame", "name": "아노게임", "captain": "EE", "seed": "천원펀치", "color": "#f59e0b", "characterId": "rival_anogame" },
+    { "id": "moonrabbit", "name": "문래빗", "captain": "송지원", "seed": "유니", "color": "#c4b5fd", "characterId": "rival_moonrabbit" },
+    { "id": "tansujoa", "name": "탄수조아", "captain": "호호", "seed": "BMO", "color": "#d6a35c", "characterId": "rival_tansujoa" },
+    { "id": "genj", "name": "GenJ", "captain": "블늅", "seed": "아이고", "color": "#ff3d9a", "characterId": "rival_genj", "expectedRank": 1 },
+    { "id": "jackpot", "name": "잭팟", "captain": "미요", "seed": "케쿠", "color": "#ef4444", "characterId": "rival_jackpot" },
+    { "id": "nagaja", "name": "나가자싸우자이기자", "captain": "햄쥐터", "seed": "듐듐", "color": "#7ee36b", "characterId": "rival_nagaja", "expectedRank": 2 },
+    { "id": "buildedjo", "name": "빌드됐조", "captain": "28병특", "seed": "킹너몬", "color": "#f2c230", "characterId": "rival_buildedjo", "expectedRank": 3 },
+    { "id": "ex", "name": "엑스", "captain": "넛츠리", "seed": "델타프로그", "color": "#4ade80", "characterId": "rival_ex" },
+    { "id": "masked", "name": "???", "captain": "", "seed": "", "color": "#8a8a99", "characterId": "rival_masked_phase1", "hidden": true }
+  ]
+}
