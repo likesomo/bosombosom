@@ -1,7 +1,7 @@
 // Single source of progress state shared by all scenes.
 export const state = {
   matchIndex: 0,
-  cheerers: [],          // character ids of rivals who joined the cheer squad
+  cheerers: [],          // character ids of rivals beaten so far (they celebrate in the ending)
   drawDone: false,
   retryCount: 0,
   settings: { volume: 0.7 },

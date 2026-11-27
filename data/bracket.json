@@ -1,7 +1,11 @@
 {
-  "leftTeamIds": ["bosombosom", "buildedjo", "sorceress", "anogame", "moonrabbit"],
-  "rightTeamIds": ["genj", "nagaja", "tansujoa", "jackpot", "ex"],
-  "rouletteTeamIds": ["sorceress", "anogame", "moonrabbit", "tansujoa", "jackpot", "ex", "buildedjo"],
+  "quarterfinals": [
+    { "id": "qf1", "teamIds": ["bosombosom", "buildedjo"], "winnerId": "bosombosom" },
+    { "id": "qf2", "teamIds": ["nagaja", "sorceress"], "winnerId": "nagaja" },
+    { "id": "qf3", "teamIds": ["genj", "anogame"], "winnerId": "genj" },
+    { "id": "qf4", "teamIds": ["moonrabbit", "tansujoa"], "winnerId": "moonrabbit" }
+  ],
+  "rouletteTeamIds": ["sorceress", "anogame", "moonrabbit", "tansujoa", "nagaja", "genj", "buildedjo"],
   "matches": [
     { "id": "quarter", "label": "8강", "opponentTeamId": "buildedjo", "stageId": "quarter_city" },
     { "id": "semi", "label": "4강", "opponentTeamId": "nagaja", "stageId": "semifinal_forest" },

@@ -1,17 +1,25 @@
 {
   "skills": [
-    { "id": "basic_attack", "name": "가시 찌르기", "key": "J", "type": "melee", "power": 6, "range": 125, "cooldown": 0.3, "knockback": 170, "fx": "impacts_hit-spark" },
-    { "id": "spike_roll", "name": "가시 구르기", "key": "K", "type": "dash", "power": 13, "range": 115, "cooldown": 2.2, "dashSpeed": 900, "duration": 0.42, "knockback": 540, "fx": "impacts_crit-hit" },
+    { "id": "basic_attack", "name": "가시 찌르기", "key": "J", "type": "melee", "shape": "cone", "range": 125, "angle": 110, "lunge": 70,
+      "power": 6, "cooldown": 0.3, "knockback": 260, "fx": "impacts_hit-spark" },
+    { "id": "spike_roll", "name": "가시 구르기", "key": "K", "type": "dash", "shape": "dash", "length": 360, "width": 110, "dashSpeed": 950,
+      "power": 13, "cooldown": 2.2, "knockback": 620, "fx": "impacts_crit-hit" },
     { "id": "mimic", "name": "흉내", "key": "L", "type": "mimic", "cooldown": 3.2, "powerScale": 1.0, "fx": "status_confused" },
-    { "id": "guard", "name": "가시 가드", "key": "SPACE", "type": "guard", "counterPower": 9, "counterKnockback": 540, "fx": "impacts_parry", "fxCounter": "nature_thorns" },
+    { "id": "guard", "name": "가시 가드", "key": "SPACE", "type": "guard", "counterPower": 9, "counterKnockback": 620, "fx": "impacts_parry", "fxCounter": "nature_thorns",
+      "burstImage": "fx_guard_burst", "auraImage": "fx_guard_aura" },
 
-    { "id": "enemy_jab", "name": "주먹", "type": "melee", "power": 5, "range": 125, "cooldown": 1.3, "telegraph": 0.3, "knockback": 220, "fx": "impacts_blunt-hit" },
-    { "id": "build_drop", "name": "빌드 완료 낙하", "type": "drop", "power": 16, "range": 95, "cooldown": 4.2, "telegraph": 1.3,
+    { "id": "enemy_jab", "name": "주먹", "type": "melee", "shape": "cone", "range": 130, "angle": 100, "lunge": 50,
+      "power": 5, "cooldown": 1.3, "telegraph": 0.42, "knockback": 300, "fx": "impacts_blunt-hit" },
+    { "id": "build_drop", "name": "빌드 완료 낙하", "type": "drop", "shape": "circle", "at": "target", "radius": 110,
+      "power": 16, "cooldown": 4.2, "telegraph": 1.3,
       "fx": "impacts_heavy-landing", "guardText": "BUILD FAILED", "telegraphText": "BUILDING… 87%", "color": "#3ddc84" },
-    { "id": "victory_shout", "name": "이기자!! 함성", "type": "shockwave", "power": 10, "range": 560, "cooldown": 3.8, "telegraph": 0.75,
+    { "id": "victory_shout", "name": "이기자!! 함성", "type": "shockwave", "shape": "circle", "at": "self", "radius": 300,
+      "power": 10, "cooldown": 3.8, "telegraph": 0.85,
       "knockback": 900, "guardDamageScale": 0.3, "guardKnockbackScale": 0.3, "fx": "lightning_thunderclap", "fx2": "nature_leaf-storm", "shoutText": "이기자!!", "color": "#7ee36b" },
-    { "id": "neon_pancake_flip", "name": "네온 팬케이크 뒤집기", "type": "launcher", "power": 14, "range": 130, "cooldown": 3.2, "telegraph": 0.55,
-      "dashSpeed": 820, "duration": 0.38, "launch": 900, "knockback": 260, "fx": "melee_uppercut", "fx2": "lightning_electrified", "color": "#ff3d9a" },
-    { "id": "color_steal", "name": "색 빼앗기", "type": "melee", "power": 6, "range": 135, "cooldown": 2.0, "telegraph": 0.6, "knockback": 240, "fx": "melee_claw-swipe" }
+    { "id": "neon_pancake_flip", "name": "네온 팬케이크 뒤집기", "type": "launcher", "shape": "dash", "length": 400, "width": 120, "dashSpeed": 980,
+      "power": 14, "cooldown": 3.2, "telegraph": 0.65,
+      "launch": 900, "knockback": 360, "fx": "melee_uppercut", "fx2": "lightning_electrified", "color": "#ff3d9a" },
+    { "id": "color_steal", "name": "색 빼앗기", "type": "melee", "shape": "cone", "range": 145, "angle": 120, "lunge": 60,
+      "power": 6, "cooldown": 2.0, "telegraph": 0.6, "knockback": 300, "fx": "melee_claw-swipe" }
   ]
 }

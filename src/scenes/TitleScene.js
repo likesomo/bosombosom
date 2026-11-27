@@ -62,7 +62,7 @@ export class TitleScene extends Phaser.Scene {
     sfx('fight');
     playFx(this, 'ui_confetti', W / 2, 520, { scale: 3 });
     state.matchIndex = 0;
-    goTo(this, 'BracketScene', {}, 350);
+    goTo(this, 'IntroScene', {}, 350);
   }
 
   openSettings() {

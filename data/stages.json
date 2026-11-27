@@ -1,8 +1,15 @@
 {
+  "arenaDefaults": { "cx": 640, "cy": 446, "rx": 610, "ry": 258, "perspective": 0.62, "unitScale": 0.36,
+    "bodyRadius": 26, "startOffsetX": 440, "startOffsetY": 20, "fxScale": 0.6 },
+  "battleIntro": { "wipeMs": 350, "vsMs": 900, "sendOutMs": 500, "bannerMs": 900 },
   "stages": [
-    { "id": "arena", "image": "assets/generated/backgrounds/bg_arena_opening_1280.png", "floorY": 562, "platformLeft": 200, "platformRight": 1080 },
-    { "id": "quarter_city", "image": "assets/generated/backgrounds/bg_stage_quarter_city_1280_web.png", "floorY": 575, "platformLeft": 180, "platformRight": 1100 },
-    { "id": "semifinal_forest", "image": "assets/generated/backgrounds/bg_stage_semifinal_forest_web.png", "floorY": 532, "platformLeft": 150, "platformRight": 1130 },
-    { "id": "final_neon", "image": "assets/generated/backgrounds/bg_stage_final_neon_1280_web.png", "floorY": 547, "platformLeft": 150, "platformRight": 1130, "rain": true }
+    { "id": "arena", "image": "assets/generated/backgrounds/bg_arena_opening_1280.png", "floorY": 562, "platformLeft": 200, "platformRight": 1080,
+      "floor": "assets/generated/floors/floor_arena_web.png", "floorColor": "#c9a978", "ringColor": "#ffd27a" },
+    { "id": "quarter_city", "image": "assets/generated/backgrounds/bg_stage_quarter_city_1280_web.png", "floorY": 575, "platformLeft": 180, "platformRight": 1100,
+      "floor": "assets/generated/floors/floor_quarter_city_web.png", "floorColor": "#5a4f86", "ringColor": "#ffb8dc" },
+    { "id": "semifinal_forest", "image": "assets/generated/backgrounds/bg_stage_semifinal_forest_web.png", "floorY": 532, "platformLeft": 150, "platformRight": 1130,
+      "floor": "assets/generated/floors/floor_semifinal_forest_web.png", "floorColor": "#5f9a4a", "ringColor": "#fff4c2" },
+    { "id": "final_neon", "image": "assets/generated/backgrounds/bg_stage_final_neon_1280_web.png", "floorY": 547, "platformLeft": 150, "platformRight": 1130, "rain": true,
+      "floor": "assets/generated/floors/floor_final_neon_web.png", "floorColor": "#2a2350", "ringColor": "#ff3d9a" }
   ]
 }

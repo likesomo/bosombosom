@@ -44,6 +44,31 @@ class HpBar {
     this.label = scene.add.text(nx, this.barY + this.barH + 8, name, {
       fontFamily: FONT, fontSize: '20px', fontStyle: 'bold', color: '#ffffff', stroke: '#1c1636', strokeThickness: 5,
     }).setOrigin(side === 'left' ? 0 : 1, 0).setDepth(203).setScrollFactor(0);
+    this.skillAnchor = { x: nx, y: this.barY + this.barH + 54 };
+    this.skillLabel = null;
+  }
+
+  /** Small white box under the HP bar naming the skill in use. A new label replaces the old one. */
+  showSkillLabel(name, seconds = 1.2, accent = '#1c1636') {
+    const scene = this.scene;
+    if (this.skillLabel) { scene.tweens.killTweensOf(this.skillLabel); this.skillLabel.destroy(); }
+    const left = this.side === 'left';
+    const t = scene.add.text(0, 0, name, { fontFamily: FONT, fontSize: '20px', fontStyle: 'bold', color: '#1c1636' }).setOrigin(left ? 0 : 1, 0.5);
+    const padX = 12;
+    const w = t.width + padX * 2;
+    const h = 34;
+    const bx = left ? -padX : -w + padX;
+    const bg = scene.add.graphics();
+    bg.fillStyle(0xffffff, 0.95).fillRoundedRect(bx, -h / 2, w, h, 8);
+    bg.lineStyle(3, Phaser.Display.Color.HexStringToColor(accent).color, 1).strokeRoundedRect(bx, -h / 2, w, h, 8);
+    const c = scene.add.container(this.skillAnchor.x + (left ? padX : -padX), this.skillAnchor.y, [bg, t]).setDepth(204).setScrollFactor(0);
+    c.setAlpha(0).setScale(0.9);
+    scene.tweens.add({ targets: c, alpha: 1, scale: 1, duration: 90 });
+    scene.tweens.add({
+      targets: c, alpha: 0, delay: Math.max(200, seconds * 1000 - 200), duration: 200,
+      onComplete: () => { if (this.skillLabel === c) this.skillLabel = null; c.destroy(); },
+    });
+    this.skillLabel = c;
   }
 
   update(dt) {
@@ -74,15 +99,24 @@ class SkillSlot {
     this.cd = scene.add.graphics();
     this.name = scene.add.text(0, 4, name, { fontFamily: FONT, fontSize: '15px', fontStyle: 'bold', color: '#fff4e6', align: 'center', wordWrap: { width: s - 8, useAdvancedWrap: true } }).setOrigin(0.5);
     this.key = scene.add.text(-s / 2 + 6, -s / 2 + 2, keyLabel, { fontFamily: FONT, fontSize: '16px', fontStyle: 'bold', color: '#ffd27a', stroke: '#1c1636', strokeThickness: 4 });
-    this.c.add([bg, this.name, this.cd, this.key]);
+    // remaining cooldown in seconds (top-right corner, one decimal, hidden at 0)
+    this.cdText = scene.add.text(s / 2 - 4, -s / 2 + 2, '', { fontFamily: FONT, fontSize: '18px', fontStyle: 'bold', color: '#ffffff', stroke: '#1c1636', strokeThickness: 4 }).setOrigin(1, 0);
+    this.c.add([bg, this.name, this.cd, this.key, this.cdText]);
   }
 
-  set(ratio, label, dim = false) {
+  set(ratio, label, dim = false, remaining = 0) {
     const s = this.size;
     this.cd.clear();
     if (ratio > 0) this.cd.fillStyle(0x000000, 0.6).fillRect(-s / 2 + 3, -s / 2 + 3 + (s - 6) * (1 - ratio), s - 6, (s - 6) * ratio);
-    if (label !== undefined && this.name.text !== label) this.name.setText(label);
-    this.c.setAlpha(dim ? 0.55 : 1);
+    if (label !== undefined && this.name.text !== label) {
+      this.name.setText(label);
+      // long mimic names: smaller and lower so the cooldown number (top-right) stays readable
+      const long = label.length > 6;
+      this.name.setFontSize(long ? 13 : 15).setY(long ? 12 : 4);
+    }
+    const cdLabel = remaining > 0.05 ? remaining.toFixed(1) : '';
+    if (this.cdText.text !== cdLabel) this.cdText.setText(cdLabel);
+    if (!this.dimmed) this.c.setAlpha(dim ? 0.55 : 1);
   }
 }
 
@@ -104,15 +138,24 @@ export class Hud {
 
   setEnemy(enemy) { this.right.fighter = enemy; }
 
+  /** Skill slots are half-transparent until the fight starts. */
+  setSlotsDim(dim) { Object.values(this.slots).forEach((s) => { s.dimmed = dim; s.c.setAlpha(dim ? 0.45 : 1); }); }
+
+  /** Skill name label at the top corner (player left, rival right). */
+  showSkillLabel(isPlayer, name, seconds = 1.2, accent) {
+    (isPlayer ? this.left : this.right).showSkillLabel(name, seconds, accent);
+  }
+
   update(dt) {
     this.left.update(dt);
     this.right.update(dt);
     const p = this.player;
     const S = this.skills;
-    this.slots.J.set(cooldownRatio(p.cooldowns, S.basic_attack));
-    this.slots.K.set(cooldownRatio(p.cooldowns, S.spike_roll));
+    const remain = (id) => p.cooldowns[id] || 0;
+    this.slots.J.set(cooldownRatio(p.cooldowns, S.basic_attack), undefined, false, remain('basic_attack'));
+    this.slots.K.set(cooldownRatio(p.cooldowns, S.spike_roll), undefined, false, remain('spike_roll'));
     const mimicSkill = p.mimicId ? S[p.mimicId] : null;
-    this.slots.L.set(cooldownRatio(p.cooldowns, S.mimic), mimicSkill ? mimicSkill.name : S.mimic.name, !mimicSkill);
+    this.slots.L.set(cooldownRatio(p.cooldowns, S.mimic), mimicSkill ? mimicSkill.name : S.mimic.name, !mimicSkill, remain('mimic'));
     this.slots.SPACE.set(0, undefined, false);
     this.slots.SPACE.c.setScale(p.guarding ? 1.12 : 1);
   }

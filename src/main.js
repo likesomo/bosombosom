@@ -2,9 +2,12 @@ import { state, reset, presetForMatch, loadSettings, logFlow } from './state/gam
 import { LogoScene } from './scenes/LogoScene.js';
 import { OpeningBattleScene } from './scenes/OpeningBattleScene.js';
 import { TitleScene } from './scenes/TitleScene.js';
+import { IntroScene } from './scenes/IntroScene.js';
 import { BracketScene } from './scenes/BracketScene.js';
 import { BattleScene } from './scenes/BattleScene.js';
 import { CheerScene } from './scenes/CheerScene.js';
+import { ChampionScene } from './scenes/ChampionScene.js';
+import { RecruitScene } from './scenes/RecruitScene.js';
 import { EndingScene } from './scenes/EndingScene.js';
 import { initAudio } from './ui/sfx.js';
 
@@ -24,7 +27,7 @@ const game = new Phaser.Game({
   backgroundColor: '#0d0a1c',
   pixelArt: true,
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-  scene: [LogoScene, OpeningBattleScene, TitleScene, BracketScene, BattleScene, CheerScene, EndingScene],
+  scene: [LogoScene, OpeningBattleScene, TitleScene, IntroScene, BracketScene, BattleScene, CheerScene, ChampionScene, RecruitScene, EndingScene],
 });
 
 // Demo hotkeys (R, 1~3, 0) handled in one place for every scene.
@@ -48,7 +51,7 @@ export function bindDemoHotkeys() {
     const m = /^(Digit|Numpad)(\d)$/.exec(ev.code);
     if (!m) return;
     const n = Number(m[2]);
-    if (n === 0) { logFlow('hotkey 0'); presetForMatch(matches); jumpTo('EndingScene'); return; }
+    if (n === 0) { logFlow('hotkey 0'); presetForMatch(matches); jumpTo('ChampionScene'); return; }
     if (n >= 1 && n <= matches) { logFlow(`hotkey ${n}`); presetForMatch(n - 1); jumpTo('BattleScene', { matchIndex: n - 1 }); }
   });
 }
@@ -62,7 +65,7 @@ if (start !== null) {
     clearInterval(wait);
     const n = Number(start);
     const matches = state.data.bracket.matches.length;
-    if (n === 0) { presetForMatch(matches); jumpTo('EndingScene'); } else { presetForMatch(n - 1); jumpTo('BattleScene', { matchIndex: n - 1 }); }
+    if (n === 0) { presetForMatch(matches); jumpTo('ChampionScene'); } else { presetForMatch(n - 1); jumpTo('BattleScene', { matchIndex: n - 1 }); }
   }, 100);
 }
 

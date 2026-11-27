@@ -1,6 +1,6 @@
 {
   "teams": [
-    { "id": "bosombosom", "name": "보솜보솜", "captain": "해피만보", "seed": "솜", "color": "#ffd27a", "characterId": "bosomi", "isPlayer": true },
+    { "id": "bosombosom", "name": "보솜보솜", "captain": "해피만보솜", "seed": "", "color": "#ffd27a", "characterId": "bosomi", "isPlayer": true },
     { "id": "sorceress", "name": "소서리스", "captain": "포스", "seed": "미소", "color": "#8b5cf6", "characterId": "rival_sorceress" },
     { "id": "anogame", "name": "아노게임", "captain": "EE", "seed": "천원펀치", "color": "#f59e0b", "characterId": "rival_anogame" },
     { "id": "moonrabbit", "name": "문래빗", "captain": "송지원", "seed": "유니", "color": "#c4b5fd", "characterId": "rival_moonrabbit" },

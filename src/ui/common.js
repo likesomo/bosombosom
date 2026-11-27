@@ -31,6 +31,17 @@ export function goTo(scene, key, data = {}, fadeMs = 250) {
   }
 }
 
+/** Black horizontal bars slide in from alternating sides, then `onDone` (scene change under full black). */
+export function stripeWipe(scene, ms = 350, onDone, bars = 8) {
+  const h = Math.ceil(H / bars);
+  for (let i = 0; i < bars; i++) {
+    const fromLeft = i % 2 === 0;
+    const r = scene.add.rectangle(fromLeft ? -W : W * 2, i * h, W, h + 1, 0x07060f, 1).setOrigin(0, 0).setDepth(2000).setScrollFactor(0);
+    scene.tweens.add({ targets: r, x: 0, delay: (i % 4) * (ms * 0.1), duration: ms * 0.6, ease: 'Quad.easeIn' });
+  }
+  scene.time.delayedCall(ms + 20, () => onDone?.());
+}
+
 export function enterScene(scene, label) {
   scene.__leaving = false;
   scene.cameras.main.fadeIn(250, 13, 10, 28);

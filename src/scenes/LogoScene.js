@@ -5,6 +5,8 @@ import { loadFx, createFxAnims } from '../ui/fx.js';
 import { initAudio } from '../ui/sfx.js';
 
 const UI_IMAGES = {
+  fx_guard_burst: 'assets/generated/fx/guard_spike_burst.png',
+  fx_guard_aura: 'assets/generated/fx/guard_aura.png',
   obj_trophy: 'assets/generated/ui/obj_trophy.png',
   ui_hp_frame: 'assets/generated/ui/ui_hp_frame.png',
   bg_bracket: 'assets/generated/backgrounds/bg_bracket.png',
@@ -24,21 +26,16 @@ export class LogoScene extends Phaser.Scene {
     enterScene(this, 'Logo');
     this.done = false;
     this.clicked = false;
-    this.timerDone = false;
 
-    const logo = txt(this, W / 2, H / 2 - 10, '보솜보솜', { size: 96, color: '#ffe9d6', stroke: '#2a2350', strokeThickness: 10 }).setAlpha(0);
-    const sub = txt(this, W / 2, H / 2 + 70, 'BOSOMBOSOM', { size: 26, color: '#ffd27a' }).setAlpha(0);
-    ['#ffd27a', '#7fd4ff', '#ffb8dc'].forEach((c, i) => {
-      const s = this.add.star(W / 2 - 250 + i * 250, H / 2 - 110 + (i % 2) * 30, 4, 6, 18, Phaser.Display.Color.HexStringToColor(c).color).setAlpha(0);
-      this.tweens.add({ targets: s, alpha: 1, angle: 90, duration: 500, delay: 200 + i * 120, yoyo: true, hold: 300 });
-    });
-    this.tweens.add({ targets: [logo, sub], alpha: 1, duration: 500, hold: 500, yoyo: true, onComplete: () => { this.timerDone = true; this.tryNext(); } });
+    // No intro: this scene only loads resources, then goes straight to the title (start button).
+    this.timerDone = true;
+    txt(this, W / 2, H - 140, '로딩 중…', { size: 22, color: '#8f86b8' });
     this.hint = txt(this, W / 2, H - 60, '', { size: 20, color: '#8f86b8' });
 
     this.input.on('pointerdown', () => this.onClick());
     this.input.keyboard.on('keydown', () => this.onClick());
 
-    if (state.loaded) { this.loadedAll = true; return; }
+    if (state.loaded) { this.loadedAll = true; this.time.delayedCall(0, () => this.tryNext()); return; }
     this.loadedAll = false;
     this.bar = this.add.rectangle(W / 2 - 200, H - 110, 0, 6, 0xffd27a).setOrigin(0, 0.5);
 
@@ -56,7 +53,10 @@ export class LogoScene extends Phaser.Scene {
     const imgs = new Set();
     Object.values(D.characters).forEach((c) => [c.image, c.imageFluffy, c.imageArmored].forEach((k) => k && imgs.add(k)));
     imgs.forEach((k) => this.load.image(k, `assets/characters/${k}.png`));
-    Object.values(D.stages).forEach((s) => this.load.image(`stage_${s.id}`, s.image));
+    Object.values(D.stages).forEach((s) => {
+      this.load.image(`stage_${s.id}`, s.image);
+      if (s.floor) this.load.image(`floor_${s.id}`, s.floor);
+    });
     Object.entries(UI_IMAGES).forEach(([k, url]) => this.load.image(k, url));
     loadFx(this);
   }
@@ -90,8 +90,7 @@ export class LogoScene extends Phaser.Scene {
 
   tryNext() {
     if (this.done || !this.loadedAll) return;
-    if (!(this.timerDone || this.clicked)) return;
     this.done = true;
-    goTo(this, 'OpeningBattleScene', {}, 300);
+    goTo(this, 'TitleScene', {}, 200);
   }
 }

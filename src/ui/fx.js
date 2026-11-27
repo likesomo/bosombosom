@@ -55,11 +55,17 @@ export function playScreenFx(scene, key, opts = {}) {
   return s;
 }
 
+// `hold` (ms): stay fully visible that long, then fade out over the rest of `duration`.
 export function floatText(scene, x, y, msg, opts = {}) {
-  const { color = '#ffffff', size = 34, stroke = '#1c1636', rise = 70, duration = 800, depth = 80 } = opts;
+  const { color = '#ffffff', size = 34, stroke = '#1c1636', strokeThickness = 7, rise = 70, duration = 800, depth = 80, hold = 0 } = opts;
   const t = scene.add.text(x, y, msg, {
-    fontFamily: 'Malgun Gothic, sans-serif', fontSize: `${size}px`, fontStyle: 'bold', color, stroke, strokeThickness: 7,
+    fontFamily: 'Malgun Gothic, sans-serif', fontSize: `${size}px`, fontStyle: 'bold', color, stroke, strokeThickness,
   }).setOrigin(0.5).setDepth(depth);
+  if (hold > 0) {
+    scene.tweens.add({ targets: t, y: y - rise, scale: { from: 1.3, to: 1 }, duration: 220, ease: 'Back.easeOut' });
+    scene.tweens.add({ targets: t, alpha: 0, delay: hold, duration: Math.max(100, duration - hold), onComplete: () => t.destroy() });
+    return t;
+  }
   scene.tweens.add({ targets: t, y: y - rise, alpha: { from: 1, to: 0 }, scale: { from: 1.25, to: 1 }, duration, ease: 'Cubic.easeOut', onComplete: () => t.destroy() });
   return t;
 }

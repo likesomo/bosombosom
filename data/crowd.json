@@ -1,0 +1,35 @@
+{
+  "groups": [
+    { "id": "early_bird", "label": "얼리버드", "color": "#ffd27a" },
+    { "id": "wildcard", "label": "와일드카드", "color": "#7fd4ff" }
+  ],
+  "members": [
+    { "id": "eb_01", "name": "현실주의", "groupId": "early_bird" },
+    { "id": "eb_02", "name": "서태희", "groupId": "early_bird" },
+    { "id": "eb_03", "name": "비", "groupId": "early_bird" },
+    { "id": "eb_04", "name": "이치", "groupId": "early_bird" },
+    { "id": "eb_05", "name": "시온", "groupId": "early_bird" },
+    { "id": "eb_06", "name": "하데스러버", "groupId": "early_bird" },
+    { "id": "eb_07", "name": "사탕무", "groupId": "early_bird" },
+    { "id": "eb_08", "name": "도토코", "groupId": "early_bird" },
+    { "id": "eb_09", "name": "커렁", "groupId": "early_bird" },
+    { "id": "wc_01", "name": "하예찬", "groupId": "wildcard" },
+    { "id": "wc_02", "name": "으니싱", "groupId": "wildcard" },
+    { "id": "wc_03", "name": "에리링", "groupId": "wildcard" },
+    { "id": "wc_04", "name": "슈붕", "groupId": "wildcard" },
+    { "id": "wc_05", "name": "PK", "groupId": "wildcard" }
+  ],
+  "openSlots": 10,
+  "cheerLines": [
+    "보솜보솜 멋지다!",
+    "역시 챔피언은 보솜보솜!",
+    "만세!!",
+    "나도 너네랑 함께하고 싶어!",
+    "가시 최고!",
+    "나 좀 뽑아 줘!",
+    "보솜보솜 팀에 들어가고 싶어!",
+    "같이 게임 만들자!",
+    "따끔한데 귀여워!"
+  ],
+  "genres": ["로그라이트", "디펜스", "생존크래프팅", "턴제 JRPG", "ARPG"]
+}
