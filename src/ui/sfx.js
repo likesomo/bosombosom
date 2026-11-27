@@ -4,6 +4,7 @@ import { state } from '../state/gameState.js';
 let ctx = null;
 let master = null;
 let noiseBuffer = null;
+let ultStep = 0;          // pitch step of the ultimate's strength cards
 
 export function initAudio() {
   try {
@@ -55,6 +56,25 @@ function noise(dur, vol = 0.5, freq = 1200, delay = 0) {
   s.stop(t + dur + 0.02);
 }
 
+/** Filtered noise whose cutoff sweeps f0 → f1 (whooshes that rise or fall). */
+function noiseSweep(dur, vol, f0, f1, delay = 0) {
+  const t = ctx.currentTime + delay;
+  const s = ctx.createBufferSource();
+  s.buffer = noiseBuffer;
+  const f = ctx.createBiquadFilter();
+  f.type = 'bandpass';
+  f.Q.value = 1.2;
+  f.frequency.setValueAtTime(f0, t);
+  f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + dur * 0.35);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  s.connect(f).connect(g).connect(master);
+  s.start(t);
+  s.stop(t + dur + 0.02);
+}
+
 const PRESETS = {
   select: () => tone('square', 660, 990, 0.08, 0.25),
   hit: () => { noise(0.08, 0.5, 2400); tone('square', 320, 120, 0.08, 0.3); },
@@ -72,6 +92,30 @@ const PRESETS = {
   tick: () => tone('square', 520, 520, 0.06, 0.2),
   fight: () => { tone('square', 784, 784, 0.12, 0.3); tone('square', 1047, 1047, 0.25, 0.3, 0.12); },
   lose: () => [392, 330, 262].forEach((f, i) => tone('triangle', f, f * 0.98, 0.2, 0.3, i * 0.15)),
+  // finishing blow: sub-bass boom + crack + a bell ring that hangs over the impact cut
+  finish: () => {
+    noise(0.45, 0.9, 700); tone('sine', 90, 35, 0.55, 0.7); tone('square', 1300, 260, 0.12, 0.28);
+    tone('triangle', 1568, 1568, 0.6, 0.16, 0.06); tone('triangle', 2349, 2349, 0.5, 0.08, 0.06);
+  },
+  // ultimate: cut-in sting + charge riser
+  ultCall: () => { tone('square', 392, 784, 0.18, 0.3); tone('square', 784, 784, 0.25, 0.25, 0.16); noiseSweep(0.9, 0.4, 300, 3000, 0.1); },
+  // ultimate: one strength card pops in (each call climbs a step)
+  ultCard: () => { const f = 659 * Math.pow(2, (ultStep++ % 6) * 2 / 12); tone('square', f, f * 1.5, 0.08, 0.22); tone('triangle', f * 2, f * 2, 0.12, 0.1, 0.03); },
+  // ultimate: cards merge into the giant spike and fire
+  ultFire: () => { ultStep = 0; noise(0.5, 0.9, 1600); tone('sawtooth', 220, 1760, 0.35, 0.35); tone('sine', 110, 40, 0.5, 0.6, 0.05); tone('triangle', 2093, 2093, 0.5, 0.14, 0.12); },
+  // ring-out launch: rising whoosh + pitch climb
+  launch: () => { noiseSweep(0.65, 0.7, 350, 5200); tone('sawtooth', 140, 900, 0.5, 0.18); },
+  // becomes a star: twinkle arpeggio + sparkle tail
+  ringout: () => {
+    [1568, 2093, 2637, 3136].forEach((f, i) => tone('square', f, f, 0.07, 0.16, i * 0.05));
+    tone('triangle', 3136, 3520, 0.45, 0.14, 0.22); tone('triangle', 4186, 4186, 0.3, 0.06, 0.3);
+  },
+  // match won: quick climb + held major chord (different from the title/intro fanfare)
+  victory: () => {
+    [523, 659, 784, 1047].forEach((f, i) => { tone('square', f, f, 0.09, 0.22, i * 0.08); tone('triangle', f / 2, f / 2, 0.09, 0.18, i * 0.08); });
+    [1047, 1319, 1568].forEach((f) => tone('square', f, f * 1.002, 0.7, 0.13, 0.36));
+    tone('triangle', 262, 262, 0.7, 0.25, 0.36);
+  },
 };
 
 export function sfx(name) {

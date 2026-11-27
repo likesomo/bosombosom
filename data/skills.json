@@ -1,7 +1,7 @@
 {
   "skills": [
     { "id": "basic_attack", "name": "가시 찌르기", "key": "J", "type": "melee", "shape": "cone", "range": 125, "angle": 110, "lunge": 70,
-      "power": 6, "cooldown": 0.3, "knockback": 260, "fx": "impacts_hit-spark" },
+      "power": 6, "cooldown": 0.283, "motionMs": 123, "motionScale": 0.15, "knockback": 260, "fx": "impacts_hit-spark" },
     { "id": "spike_roll", "name": "가시 구르기", "key": "K", "type": "dash", "shape": "dash", "length": 360, "width": 110, "dashSpeed": 950,
       "power": 13, "cooldown": 2.2, "knockback": 620, "fx": "impacts_crit-hit" },
     { "id": "mimic", "name": "흉내", "key": "L", "type": "mimic", "cooldown": 3.2, "powerScale": 1.0, "fx": "status_confused" },

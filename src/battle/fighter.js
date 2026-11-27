@@ -33,6 +33,9 @@ export class Fighter {
     this.dashTimer = 0;
     this.dashSkill = null;
     this.dashHitDone = false;
+    this.punchT = 0;         // melee swing pose, applied in render() so it shows on the input frame
+    this.punchDur = 0;
+    this.punchAmt = 0;
     this.invuln = 0;
     this.stun = 0;
     this.cooldowns = {};
@@ -81,6 +84,13 @@ export class Fighter {
 
   stop() { this.moveVx = 0; this.moveVy = 0; }
 
+  /** Melee swing pose: stretch forward and back over `ms`. */
+  punch(ms, amount) {
+    this.punchDur = ms / 1000;
+    this.punchT = this.punchDur;
+    this.punchAmt = amount;
+  }
+
   /** Push along a ground-space unit vector with `power` ground px/s, optional lift (z speed). */
   knock(ux, uy, power, lift = 0) {
     this.knockVx = ux * power;
@@ -102,6 +112,7 @@ export class Fighter {
   update(dt) {
     if (this.invuln > 0) this.invuln -= dt;
     if (this.stun > 0) this.stun -= dt;
+    if (this.punchT > 0) this.punchT = Math.max(0, this.punchT - dt);
 
     if (this.state === 'dash') {
       this.dashTimer -= dt;
@@ -137,7 +148,9 @@ export class Fighter {
   render() {
     const s = this.sprite;
     const jx = this.jitter ? (Math.random() - 0.5) * this.jitter : 0;
-    s.x = this.x + jx;
+    // swing curve 0 → 1 → 0; the first frame already sits near the peak
+    const swing = this.punchT > 0 ? Math.sin(Math.PI * (0.35 + 0.65 * (this.punchDur - this.punchT) / this.punchDur)) : 0;
+    s.x = this.x + jx + swing * 6 * this.facing;
     s.y = this.y - this.z;
     s.setDepth(30 + (this.y / 720) * 40);
     s.setFlipX(this.facing < 0);
@@ -149,7 +162,7 @@ export class Fighter {
     } else {
       s.rotation = 0;
       const squash = this.guarding ? 0.82 : 1;
-      const stretch = this.guarding ? 1.08 : 1;
+      const stretch = (this.guarding ? 1.08 : 1) * (1 + swing * this.punchAmt);
       s.setScale(this.baseScale * stretch, this.baseScale * squash);
     }
     const onFloor = this.state !== 'ko' || this.z < 40;

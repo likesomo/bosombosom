@@ -16,14 +16,17 @@ import {
 const MIMIC_TINT = 0xffb8dc;
 const SKILL_LABEL_SECONDS = 1.2;
 const SHAKE = { ms: 70, intensity: 0.006 };          // only when Bosomi is hit or on a big hit
-const FINISH = { cutMs: 200, zoomMs: 800, zoom: 1.08 };
+// cutMs: impact cut with the rival close-up · zoomMs: vignette + zoom · flySpeed: ring-out speed
+// flySlow: time scale of the ring-out flight (slow motion) · trailMs: star trail spawn interval
+const FINISH = { cutMs: 650, zoomMs: 900, zoom: 1.12, flySpeed: 1350, flySlow: 0.5, trailMs: 60 };
 
-/** "{name}{이/가} ..." → picks the Korean particle from the last syllable of name. */
+/** "{name}{이/가} ..." / "{name}{을/를} ..." → picks the Korean particle from the last syllable of name. */
 export function fillName(template, name) {
   const last = name.charCodeAt(name.length - 1);
   const hasFinal = last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 !== 0;
   return template
     .replace(/\{name\}\{이\/가\}/g, name + (hasFinal ? '이' : '가'))
+    .replace(/\{name\}\{을\/를\}/g, name + (hasFinal ? '을' : '를'))
     .replace(/\{name\}/g, name);
 }
 
@@ -190,7 +193,8 @@ export class BattleScene extends Phaser.Scene {
 
   // ---------- main loop ----------
   update(time, deltaMs) {
-    const dt = Math.min(deltaMs / 1000, 0.05);
+    // ring-out flight plays in slow motion so the flying rival stays readable
+    const dt = Math.min(deltaMs / 1000, 0.05) * (this.koTrail ? FINISH.flySlow : 1);
     this.updateRain(dt);
     if (this.freezeT > 0) { this.freezeT -= dt; return; }
     this.updateMode?.(dt);
@@ -356,7 +360,7 @@ export class BattleScene extends Phaser.Scene {
       case 'melee': {
         showSkillArea(this, skill, area, user.K, { kind: 'flash', seconds: 0.25, color: flashCol });
         if (skill.lunge) user.knock(fwd.x, fwd.y, skill.lunge * 3.9);
-        this.tweens.add({ targets: user.sprite, scaleX: user.baseScale * 1.15, duration: 70, yoyo: true });
+        user.punch(skill.motionMs ?? 140, skill.motionScale ?? 0.15);
         sfx('whoosh');
         if (inSkillArea(skill, area, target.x, target.y, user.K, target.body)) this.resolve(user, target, skill, opts);
         else if (skill.fx) {
@@ -580,7 +584,7 @@ export class BattleScene extends Phaser.Scene {
       }
     }
     if (isKO(f.hp) && !this.ended) {
-      if (f === this.enemy) this.startKO(); else this.startDefeat();
+      if (f === this.enemy) this.startUltimate(); else this.startDefeat();
     }
   }
 
@@ -620,6 +624,115 @@ export class BattleScene extends Phaser.Scene {
     this.brain?.enterPhase2(e.def.phase2);
   }
 
+  // ---------- ultimate: one team-strength keyword per rival (plays before the finish) ----------
+  // cut-in with the keyword (0–0.9 s) → spiked keyword plate charges above Bosomi (0.9–1.5 s)
+  // → plate flies along a prism beam and stamps the rival (1.5–1.75 s) → startKO() at 2.1 s
+  ultimateKeyword() {
+    return T('ultimateKeywords', {})[this.team?.id] || T('ultimateName', '강점 합체');
+  }
+
+  startUltimate() {
+    if (this.isOpening) { this.startKO(); return; }
+    this.ended = true;
+    this.freezeT = 99;
+    const p = this.player; const e = this.enemy;
+    const kw = this.ultimateKeyword();
+    this.brain?.interrupt();
+    e.telegraphMarker?.destroy();
+    this.dizzyFx?.destroy(); this.dizzyFx = null;
+    if (p.guarding) { p.guarding = false; p.setBaseTint(null); }
+    this.syncGuardAura(p);
+    const temp = [];                       // everything here is removed before the finish starts
+    const at = (ms, fn) => this.time.delayedCall(ms, fn);
+
+    // dim the world, keep both fighters lit above the dim layer
+    const dim = this.add.rectangle(0, 0, W, H, 0x07060f, 1).setOrigin(0, 0).setDepth(380).setScrollFactor(0).setAlpha(0);
+    temp.push(dim);
+    this.tweens.add({ targets: dim, alpha: 0.72, duration: 160 });
+    p.sprite.setDepth(392); e.sprite.setDepth(391);
+    const cam = this.cameras.main;        // no zoom here: it would also scale the screen-fixed cut-in band
+
+    // ① cut-in band: Bosomi portrait + "보솜보솜 필살기!" + the keyword, big
+    sfx('ultCall');
+    const band = this.add.container(0, 150).setDepth(420).setScrollFactor(0);
+    const strip = this.add.rectangle(0, 0, W, 170, 0xffd27a).setOrigin(0, 0.5);
+    const stripEdge = this.add.rectangle(0, 0, W, 184, 0xff7fbf).setOrigin(0, 0.5);
+    const face = this.add.image(-260, 10, textureFor(this, p.def, p.def.imageArmored || p.def.image)).setOrigin(0.5, 0.55).setScale(0.42);
+    const call = this.add.text(W / 2 + 60, -52, T('ultimateCall', '보솜보솜 필살기!'), { fontFamily: FONT, fontSize: '34px', fontStyle: 'bold', color: '#1c1636' }).setOrigin(0.5);
+    const name = this.add.text(W / 2 + 60, 24, kw, { fontFamily: FONT, fontSize: kw.length > 6 ? '68px' : '80px', fontStyle: 'bold', color: '#ffffff', stroke: '#e0213b', strokeThickness: 12 }).setOrigin(0.5);
+    band.add([stripEdge, strip, face, call, name]);
+    band.setScale(1, 0);
+    temp.push(band);
+    this.tweens.add({ targets: band, scaleY: 1, duration: 140, ease: 'Back.easeOut' });
+    this.tweens.add({ targets: face, x: 260, duration: 260, ease: 'Cubic.easeOut' });
+    this.tweens.add({ targets: name, scale: { from: 1.6, to: 1 }, delay: 80, duration: 200, ease: 'Back.easeOut' });
+    at(820, () => this.tweens.add({ targets: band, scaleY: 0, duration: 120, ease: 'Quad.easeIn' }));
+
+    // ② the keyword becomes a spiked plate above Bosomi and charges with prism light
+    const plateX = Phaser.Math.Clamp(p.x, 240, W - 240);
+    const plateY = Phaser.Math.Clamp(p.topY - 90, 230, H - 160);
+    const plate = this.add.container(plateX, plateY).setDepth(400).setScale(0);
+    const label = this.add.text(0, 0, kw, { fontFamily: FONT, fontSize: '54px', fontStyle: 'bold', color: '#1c1636' }).setOrigin(0.5);
+    const pw = label.width + 70; const ph = 92;
+    const spikes = this.add.graphics();
+    const n = Math.max(5, Math.round(pw / 46));
+    spikes.fillStyle(0xffd27a, 1).lineStyle(4, 0xff7fbf, 1);
+    for (let i = 0; i < n; i++) {
+      const x = -pw / 2 + (i + 0.5) * (pw / n);
+      [[-ph / 2, -1], [ph / 2, 1]].forEach(([y, dir]) => {
+        spikes.fillTriangle(x - 16, y, x + 16, y, x, y + dir * 34);
+        spikes.strokeTriangle(x - 16, y, x + 16, y, x, y + dir * 34);
+      });
+    }
+    [-1, 1].forEach((side) => {
+      spikes.fillTriangle(side * pw / 2, -22, side * pw / 2, 22, side * (pw / 2 + 38), 0);
+      spikes.strokeTriangle(side * pw / 2, -22, side * pw / 2, 22, side * (pw / 2 + 38), 0);
+    });
+    spikes.setScale(0.2);
+    const bg = this.add.rectangle(0, 0, pw, ph, 0xfff4e6).setStrokeStyle(7, 0xff7fbf);
+    plate.add([spikes, bg, label]);
+    temp.push(plate);
+    at(900, () => {
+      sfx('ultCard');
+      this.tweens.add({ targets: plate, scale: 1, duration: 200, ease: 'Back.easeOut' });
+      this.tweens.add({ targets: spikes, scale: 1, delay: 120, duration: 180, ease: 'Back.easeOut', onStart: () => sfx('ultCard') });
+      const glow = this.fx('holy_sunburst', plateX, plateY, { scale: 2.2, depth: 399 });
+      if (glow) temp.push(glow);
+      p.flash(0xfff27a, 120);
+    });
+    at(1250, () => { sfx('ultCard'); this.tweens.add({ targets: plate, scale: 1.12, duration: 110, yoyo: true }); });
+
+    // ③ fire: prism beam toward the rival, the plate rides it and stamps the rival
+    at(1500, () => {
+      sfx('whoosh');
+      const ang = Math.atan2(e.centerY - plateY, e.x - plateX);
+      const len = Math.hypot(e.x - plateX, e.centerY - plateY);
+      const beam = this.add.container(plateX, plateY).setDepth(396).setRotation(ang).setScale(0, 1);
+      const g = this.add.graphics();
+      [[0xff7fbf, 46], [0xffd27a, 30], [0xfff4e6, 15]].forEach(([col, half]) => g.fillStyle(col, 1).fillTriangle(0, -half, 0, half, len + 40, 0));
+      beam.add(g);
+      temp.push(beam);
+      this.tweens.add({ targets: beam, scaleX: 1, duration: 220, ease: 'Quad.easeIn' });
+      this.tweens.add({ targets: plate, x: e.x, y: e.centerY - 10, angle: e.x >= plateX ? 8 : -8, duration: 220, ease: 'Quad.easeIn' });
+    });
+    at(1730, () => {
+      sfx('ultFire');
+      cam.flash(90, 255, 255, 255);
+      cam.shake(280, 0.018);
+      e.flash(0xffffff, 180);
+      this.spikeBurst(e, 0.55);
+      this.fx('impacts_crit-hit', e.x, e.centerY, { scale: 3.2, depth: 397 });
+      this.tweens.add({ targets: plate, scaleX: 1.3, scaleY: 0.8, duration: 70, yoyo: true });
+    });
+
+    // ④ clean up and hand over to the finish sequence
+    at(2100, () => {
+      temp.forEach((o) => o.destroy());
+      p.render(); e.render();
+      this.startKO();
+    });
+  }
+
   // ---------- KO / defeat ----------
   // Finish: impact cut (0.2 s) → vignette + zoom (0.8 s) → smash-style ring-out → "장외!" + "승리!"
   startKO() {
@@ -633,8 +746,8 @@ export class BattleScene extends Phaser.Scene {
     e.jitter = 0;
     e.telegraphMarker?.destroy();
     this.dizzyFx?.destroy(); this.dizzyFx = null;
-    sfx('ko');
-    const cut = this.impactCut(e.x, e.centerY);
+    sfx('finish');
+    const cut = this.impactCut(e);
 
     this.time.delayedCall(FINISH.cutMs, () => {
       cut.destroy();
@@ -654,21 +767,30 @@ export class BattleScene extends Phaser.Scene {
         cam.zoomTo(1, 150, 'Quad.easeOut');
         cam.pan(W / 2, H / 2, 150, 'Quad.easeOut');
         this.removeVignette(vignette);
-        sfx('heavy');
+        sfx('launch');
         this.fx('explosions_cartoon-pow', e.x, e.centerY, { scale: 2.6, depth: 121 });
         // smash-style ring-out: fly off the ring and out of the screen
-        e.knockVx = v.x * 1900;
-        e.knockVy = v.y * 1900 * e.K;
+        e.knockVx = v.x * FINISH.flySpeed;
+        e.knockVy = v.y * FINISH.flySpeed * e.K;
         e.vz = 1250;
         e.facing = v.x >= 0 ? -1 : 1;
+        e.sprite.setDepth(140);
+        this.koTrail = this.time.addEvent({ delay: FINISH.trailMs, loop: true, callback: () => this.koTrailStar(e) });
         this.freezeT = 0;
       });
     });
-    this.koSafety = this.time.delayedCall(FINISH.cutMs + FINISH.zoomMs + 1500, () => { if (!this.starShown) this.updateKO(true); });
+    this.koSafety = this.time.delayedCall(FINISH.cutMs + FINISH.zoomMs + 1800, () => { if (!this.starShown) this.updateKO(true); });
   }
 
-  /** Full-screen black frame with white speed lines and a star burst on the hit point. */
-  impactCut(x, y) {
+  /** Small fading star left behind the flying rival. */
+  koTrailStar(f) {
+    const s = this.add.star(f.x + (Math.random() - 0.5) * 20, f.y - f.z - f.spriteHeight * 0.4, 5, 5, 13, 0xfff27a).setDepth(139).setStrokeStyle(2, 0xffffff);
+    this.tweens.add({ targets: s, scale: 0.2, alpha: 0, angle: 120, duration: 420, onComplete: () => s.destroy() });
+  }
+
+  /** Full-screen black frame: speed lines, star burst, the rival close-up and "{name} 날려버렸다!". */
+  impactCut(f) {
+    const x = Phaser.Math.Clamp(f.x, 300, W - 300); const y = Phaser.Math.Clamp(f.centerY, 220, H - 260);
     const c = this.add.container(0, 0).setDepth(600).setScrollFactor(0);
     const g = this.add.graphics();
     g.fillStyle(0x000000, 1).fillRect(0, 0, W, H);
@@ -686,10 +808,17 @@ export class BattleScene extends Phaser.Scene {
       );
     }
     const star = this.add.star(x, y, 8, 34, 110, 0xfff27a).setStrokeStyle(6, 0xffffff);
-    const label = this.add.text(W / 2, H - 130, T('finishCut', '날려버렸다!'), {
-      fontFamily: 'Malgun Gothic, sans-serif', fontSize: '72px', fontStyle: 'bold', color: '#ff3b3b', stroke: '#ffffff', strokeThickness: 10,
+    // the rival being sent flying: white silhouette for one beat, then its own colors, tilted away from the hit
+    const who = this.add.image(x, y, f.sprite.texture.key)
+      .setOrigin(0.5, 0.55).setScale(f.baseScale * 3.8).setFlipX(f.sprite.flipX).setAngle(-14 * f.facing).setTintFill(0xffffff);
+    this.time.delayedCall(90, () => { if (who.active) who.clearTint(); });
+    this.tweens.add({ targets: who, scale: { from: f.baseScale * 4.5, to: f.baseScale * 3.8 }, duration: 160, ease: 'Back.easeOut' });
+    this.tweens.add({ targets: who, x: x + 7, duration: 45, yoyo: true, repeat: Math.floor(FINISH.cutMs / 90) });
+    const label = this.add.text(W / 2, H - 120, fillName(T('finishCut', '{name}{을/를} 날려버렸다!'), f.def.name), {
+      fontFamily: 'Malgun Gothic, sans-serif', fontSize: '68px', fontStyle: 'bold', color: '#ff3b3b', stroke: '#ffffff', strokeThickness: 10,
     }).setOrigin(0.5);
-    c.add([g, star, label]);
+    this.tweens.add({ targets: label, scale: { from: 1.4, to: 1 }, duration: 180, ease: 'Back.easeOut' });
+    c.add([g, star, who, label]);
     return c;
   }
 
@@ -714,16 +843,17 @@ export class BattleScene extends Phaser.Scene {
     const sy0 = e.y - e.z;
     if (force || e.x < -80 || e.x > W + 80 || sy0 < -120 || sy0 > H + 160) {
       this.starShown = true;
+      this.koTrail?.remove(); this.koTrail = null;
       const sx = Phaser.Math.Clamp(e.x, 60, W - 60);
       const sy = Phaser.Math.Clamp(sy0, 60, H - 120);
       const star = this.add.star(sx, sy, 5, 10, 26, 0xfff27a).setDepth(150);
       this.tweens.add({ targets: star, scale: { from: 0.2, to: 2.2 }, angle: 180, alpha: { from: 1, to: 0 }, duration: 700, ease: 'Cubic.easeOut' });
       this.fx('explosions_firework-burst', sx, sy + 40, { scale: 1.6, depth: 149 });
-      sfx('fanfare');
+      sfx('ringout');
       this.crowd?.cheer('big');
-      txt(this, W / 2, H / 2 - 60, T('ko', '장외!'), { size: 72, color: '#fff27a', depth: 300 });
+      txt(this, W / 2, H / 2 - 60, fillName(T('ko', '{name} 장외!'), e.def.name), { size: 72, color: '#fff27a', depth: 300 });
       this.fx('ui_confetti', W / 2, H / 2 + 40, { scale: 3, depth: 290 });
-      this.time.delayedCall(450, () => this.banner(T('victory', '승리!'), { seconds: 0, size: 56, y: H / 2 + 70 }));
+      this.time.delayedCall(450, () => { sfx('victory'); this.banner(T('victory', '승리!'), { seconds: 0, size: 56, y: H / 2 + 70 }); });
       this.time.delayedCall(1700, () => this.finishMatch());
     }
   }

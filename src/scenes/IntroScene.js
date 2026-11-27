@@ -110,8 +110,11 @@ export class IntroScene extends Phaser.Scene {
     const bo = this.add.image(W / 2, 470, textureFor(this, def)).setOrigin(0.5, 0.94).setScale(0.1);
     layer.add(bo);
     this.tweens.add({ targets: bo, scale: 0.5, duration: 320, ease: 'Back.easeOut' });
-    playFx(this, 'nature_thorns', W / 2 - 120, 440, { scale: 2, depth: 12 });
-    playFx(this, 'nature_thorns', W / 2 + 120, 440, { scale: 2, depth: 12, flipX: true });
+    // thorns grow from the pivot toward +x (flipX: toward -x): start at the body edges on the floor line and grow outward, behind Bosomi
+    [[-110, true], [110, false]].forEach(([dx, flipX]) => {
+      const th = playFx(this, 'nature_thorns', W / 2 + dx, 470, { scale: 2, flipX });
+      if (th) layer.addAt(th, 0);
+    });
     this.cameras.main.flash(160, 255, 240, 220);
     sfx('fight');
   }
