@@ -110,12 +110,25 @@ export class IntroScene extends Phaser.Scene {
     const bo = this.add.image(W / 2, 470, textureFor(this, def)).setOrigin(0.5, 0.94).setScale(0.1);
     layer.add(bo);
     this.tweens.add({ targets: bo, scale: 0.5, duration: 320, ease: 'Back.easeOut' });
-    // thorns grow from the pivot toward +x (flipX: toward -x): start at the body edges on the floor line and grow outward, behind Bosomi
-    [[-110, true], [110, false]].forEach(([dx, flipX]) => {
-      const th = playFx(this, 'nature_thorns', W / 2 + dx, 470, { scale: 2, flipX });
-      if (th) layer.addAt(th, 0);
+    // prism spikes (same look as the battle ultimate's beam): a fan rising from the floor behind Bosomi
+    const fan = [[-62, 150], [-42, 205], [-21, 245], [0, 270], [21, 245], [42, 205], [62, 150]];
+    fan.forEach(([deg, len], i) => {
+      const spike = this.add.container(W / 2 + deg * 1.6, 462).setRotation(Phaser.Math.DegToRad(deg)).setScale(1, 0);
+      const g = this.add.graphics();
+      [[0xff7fbf, 26], [0xffd27a, 17], [0xfff4e6, 8]].forEach(([col, half]) => g.fillStyle(col, 1).fillTriangle(-half, 0, half, 0, 0, -len));
+      spike.add(g);
+      layer.addAt(spike, 0);
+      this.tweens.add({ targets: spike, scaleY: 1, delay: 120 + Math.abs(i - 3) * 45, duration: 220, ease: 'Back.easeOut' });
     });
+    // radial spike burst behind the fan, as in the guard / ultimate hit
+    if (this.textures.exists('fx_guard_burst')) {
+      const burst = this.add.image(W / 2, 360, 'fx_guard_burst').setScale(0.12).setAlpha(0.95);
+      layer.addAt(burst, 0);
+      this.tweens.add({ targets: burst, scale: 0.62, delay: 100, duration: 260, ease: 'Back.easeOut' });
+      this.tweens.add({ targets: burst, alpha: 0, delay: 520, duration: 360 });
+    }
     this.cameras.main.flash(160, 255, 240, 220);
     sfx('fight');
+    this.time.delayedCall(120, () => sfx('ultFire'));
   }
 }
